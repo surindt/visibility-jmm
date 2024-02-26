@@ -16,28 +16,28 @@ import java.util.stream.IntStream;
     https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2429.htm
     https://www.kernel.org/doc/html/latest/process/volatile-considered-harmful.html
  */
-public class App 
-{
+public class App {
     public static void main(String[] args) {
-        Counter c = new Counter();
-        c.test();
-    }
-    }
-    class Counter {
-        volatile int count = 0; //Volatile is not enough
-        void inc() {
-            count = count + 1;
+            FlagConcu f = new FlagConcu();
+            f.test();
         }
-        void print(){
-            System.out.println(count);
         }
-    public void test() {
-        int numProcessors = Runtime.getRuntime().availableProcessors();
-        ExecutorService executor = Executors.newFixedThreadPool(numProcessors);
-        IntStream.range(0, numProcessors).forEach(i -> executor.submit(this::inc)); // The :: is a reference to a method turned into a "callback"
-        executor.shutdown();
-        print();
+        class FlagConcu {
+            volatile boolean flag = false;
+    
+            void raised() {
+            this.flag = true;
+            System.out.println("here: "+flag); //write operation
+            }
+        public void test() {
+            int numProcessors = Runtime.getRuntime().availableProcessors();
+            ExecutorService executor = Executors.newFixedThreadPool(numProcessors);
+            IntStream.range(0, 2).forEach(i -> executor.submit(this::raised)); // The :: is a reference to a method turned into a "callback"
+         
+            //while(!flag);
+            System.out.println(flag); //read operation
+            executor.shutdown();
+        }
     }
-}
-
+    
 
