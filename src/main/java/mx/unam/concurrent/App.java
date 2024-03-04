@@ -24,18 +24,24 @@ public class App {
         }
         class FlagConcu {
             volatile boolean flag = false;
-    
+            int i;
             void raised() {
-            this.flag = true;
             System.out.println("here: "+flag); //write operation
+            this.flag = true;
+            }
+            void readF(){
+                while (!flag) {
+                    this.i = i+1;
+                }
             }
         public void test() {
             int numProcessors = Runtime.getRuntime().availableProcessors();
             ExecutorService executor = Executors.newFixedThreadPool(numProcessors);
-            IntStream.range(0, 2).forEach(i -> executor.submit(this::raised)); // The :: is a reference to a method turned into a "callback"
-         
+            executor.submit(this::raised); // The :: is a reference to a method turned into a "callback"
+            executor.submit(this::readF);
+
             //while(!flag);
-            System.out.println(flag); //read operation
+            System.out.println(flag +" "+i); //read operation
             executor.shutdown();
         }
     }
