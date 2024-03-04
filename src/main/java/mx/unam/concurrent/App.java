@@ -3,6 +3,9 @@ package mx.unam.concurrent;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.IntStream;
+import java.util.concurrent.Future;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * References
@@ -25,8 +28,9 @@ public class App
     }
     class Counter {
         volatile int count = 0; //Volatile is not enough
-        void inc() {
+        Boolean inc() {
             count = count + 1;
+            return true;
         }
         void print(){
             System.out.println(count);
@@ -34,9 +38,22 @@ public class App
     public void test() {
         int numProcessors = Runtime.getRuntime().availableProcessors();
         ExecutorService executor = Executors.newFixedThreadPool(numProcessors);
-        IntStream.range(0, numProcessors).forEach(i -> executor.submit(this::inc)); // The :: is a reference to a method turned into a "callback"
-        executor.shutdown();
-        print();
+        try {
+              
+            List<Future<Boolean>> futures = new ArrayList<Future<Boolean>>();
+            for (int i = 0; i < 64; i++) {
+                futures.add(executor.submit(this::inc)); //Para ejecutar CoarseList
+            }
+            for (int i = 0; i < futures.size(); i++) {
+                Boolean result = futures.get(i).get();
+                //System.out.printf("\n Result: "+result);
+            }
+            executor.shutdown();
+            print();
+        } catch (Exception e) {
+            System.out.printf("Error %s\n", e.getMessage());
+        }
+        
     }
 }
 
